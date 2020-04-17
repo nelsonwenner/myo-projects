@@ -9,7 +9,7 @@
 
 int main()
 {
-	myo::Hub hub("com.example.collector-data");
+	myo::Hub hub("com.developer.collector-data");
 
 	std::cout << "Waiting for connection myo...\n";
 	
@@ -17,7 +17,7 @@ int main()
 
 	if (!myo) { throw std::runtime_error("Unable to find a Myo!"); }
 
-	std::cout << "\n" << "Connected to a Myo armband!" << "\n\n";
+	std::cout << "\n" << "Connected to a Myo armband!" << "\n";
 
 	myo->setStreamEmg(myo::Myo::streamEmgEnabled);
 

@@ -36,22 +36,13 @@ public:
 	void onPose(myo::Myo * myo, uint64_t timestamp, myo::Pose pose) {
 		this->currentPose = pose;
 		
-		if (pose != myo::Pose::unknown && pose != myo::Pose::rest) {
+		if (pose != myo::Pose::unknown) {
 
-			/*Tell the Myo to stay unlocked until told otherwise. We do that here so you can hold the poses without the Myo becoming locked. */
 			myo->unlock(myo::Myo::unlockHold);
 
-			/* Notify the Myo that the pose has resulted in an action, in this case changing the text on the screen. The Myo will vibrate. */
 			myo->notifyUserAction();
-
-			if (this->currentPose == myo::Pose::fingersSpread) {
-				std::cout << "Left\n";
-				this->clientSocket->sendFrame((char*)"left");
-			} 
-			else if (this->currentPose == myo::Pose::fist) {
-				std::cout << "Right\n";
-				this->clientSocket->sendFrame((char*)"right");
-			}
+			
+			this->socketSendPose();
 		}
 	}
 
@@ -74,6 +65,11 @@ public:
 	/* Overrider */
 	void onLock(myo::Myo * myo, uint64_t timestamp) {
 		isUnlocked = false;
+	}
+
+	void socketSendPose() {
+		std::string poseString = this->currentPose.toString();
+		this->clientSocket->sendFrame((char*)poseString.c_str());
 	}
 
 	void print() {

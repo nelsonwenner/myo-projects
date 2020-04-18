@@ -6,33 +6,48 @@
 #include "DataCollector.cpp"
 #include <myo/myo.hpp>
 
-#define SERVER "127.0.0.1"
-#define SERVERPORT 5000
 
 int main()
 {	
+	char SERVERPORT[12];
+	char SERVER[12];
+
 	ClientSocket* clientSocket = new ClientSocket();
 
-	clientSocket->connecting(SERVER, SERVERPORT);
+	std::cout << "Enter the server [IP] to connect: ";
+	std::cin >> SERVER;
+
+	std::cout << "\nEnter the server [PORT] to connect: ";
+	std::cin >> SERVERPORT;
+
+	clientSocket->connecting((char*)SERVER, std::stoi(SERVERPORT));
 
 	DataCollector* dataCollector = new DataCollector(clientSocket);
 
-	myo::Hub hub("com.developer.collector-data");
+	try {
+		myo::Hub hub("com.developer.socket-send");
 
-	std::cout << "Waiting for connection myo...\n";
+		std::cout << "Waiting for connection myo...\n";
 
-	myo::Myo* myo = hub.waitForMyo(10000);
+		myo::Myo* myo = hub.waitForMyo(10000);
 
-	if (!myo) { throw std::runtime_error("Unable to find a Myo!"); }
+		if (!myo) { throw std::runtime_error("Unable to find a Myo!"); }
 
-	std::cout << "\n" << "Connected to a Myo armband!" << "\n";
+		std::cout << "\n" << "Connected to a Myo armband!" << "\n";
 
-	myo->setStreamEmg(myo::Myo::streamEmgEnabled);
+		myo->setStreamEmg(myo::Myo::streamEmgEnabled);
 
-	hub.addListener(dataCollector);
+		hub.addListener(dataCollector);
 
-	while (true) {
-		hub.run(1000 / 20);
-		dataCollector->print();
+		while (true) {
+			hub.run(1000 / 20);
+			dataCollector->print();
+		}
+	}
+	catch (const std::exception& e) {
+		std::cerr << "Error: " << e.what() << '\n';
+		std::cerr << "Press enter to continue.";
+		clientSocket->closeSocket();
+		return 1;
 	}
 }
